@@ -44,6 +44,8 @@ onMounted(() => {
   console.log('Layout type:', layoutType.value);
   console.log('Zones:', zones.value.length);
   console.log('Assignments:', assignments.value);
+  console.log('Labels:', labels.value);
+  console.log('Background Shapes:', backgroundShapes.value);
 
   // Log each assignment detail
   assignments.value.forEach(assignment => {
@@ -52,6 +54,12 @@ onMounted(() => {
       media: assignment.media
     });
   });
+
+  // Log each label
+  labels.value.forEach(label => {
+    console.log(`Label "${label.text}":`, label);
+  });
+
   console.log('===========================');
 });
 
@@ -89,17 +97,156 @@ function getShapeStyle(shape) {
 }
 
 function getLabelStyle(label) {
-  return {
+  console.log('Processing label style:', label);
+
+  const style = {
     position: 'absolute',
-    left: `${label.x}%`,
-    top: `${label.y}%`,
-    fontSize: label.fontSize,
-    fontWeight: label.fontWeight,
-    color: label.color,
-    transform: `rotate(${label.rotation}deg) scale(${label.scale})`,
-    zIndex: label.zIndex,
-    whiteSpace: 'nowrap'
+    pointerEvents: 'none',
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+    display: 'inline-block'
   };
+
+  // Position - puede estar en label.position.x/y o label.x/y
+  const x = label.position?.x ?? label.x;
+  const y = label.position?.y ?? label.y;
+
+  if (x !== undefined) {
+    if (typeof x === 'string' && x.includes('px')) {
+      style.left = x;
+    } else if (typeof x === 'string' && x.includes('%')) {
+      style.left = x;
+    } else {
+      // Es un número, lo convertimos a porcentaje
+      style.left = `${x}%`;
+    }
+  }
+
+  if (y !== undefined) {
+    if (typeof y === 'string' && y.includes('px')) {
+      style.top = y;
+    } else if (typeof y === 'string' && y.includes('%')) {
+      style.top = y;
+    } else {
+      // Es un número, lo convertimos a porcentaje
+      style.top = `${y}%`;
+    }
+  }
+
+  // Style object - puede estar en label.style o directamente en label
+  const labelStyle = label.style || {};
+
+  // Font size
+  const fontSize = labelStyle.fontSize || label.fontSize;
+  if (fontSize) {
+    if (typeof fontSize === 'string') {
+      style.fontSize = fontSize;
+    } else {
+      style.fontSize = `${fontSize}px`;
+    }
+  }
+
+  // Font weight
+  const fontWeight = labelStyle.fontWeight || label.fontWeight;
+  if (fontWeight) {
+    style.fontWeight = fontWeight;
+  }
+
+  // Font style
+  const fontStyle = labelStyle.fontStyle || label.fontStyle;
+  if (fontStyle) {
+    style.fontStyle = fontStyle;
+  }
+
+  // Color
+  const color = labelStyle.color || label.color;
+  if (color) {
+    style.color = color;
+  }
+
+  // Z-index
+  if (label.zIndex !== undefined) {
+    style.zIndex = label.zIndex;
+  } else {
+    style.zIndex = 100;
+  }
+
+  // Width y Height - removemos width para permitir texto horizontal completo
+  // El width en labels es opcional, si no está, el texto se expande horizontalmente
+  if (label.width !== undefined && label.width !== null) {
+    // Solo aplicar width si está explícitamente definido y queremos limitarlo
+    // En la mayoría de casos, omitiremos esto para permitir texto horizontal
+    if (typeof label.width === 'string') {
+      style.maxWidth = label.width;
+    } else if (label.width > 0) {
+      style.maxWidth = `${label.width}px`;
+    }
+  }
+
+  if (label.height !== undefined) {
+    if (typeof label.height === 'string') {
+      style.height = label.height;
+    } else {
+      style.height = `${label.height}px`;
+    }
+  }
+
+  // Transform
+  const transforms = [];
+  if (label.rotation !== undefined && label.rotation !== 0) {
+    transforms.push(`rotate(${label.rotation}deg)`);
+  }
+  if (label.scale !== undefined && label.scale !== 1) {
+    transforms.push(`scale(${label.scale})`);
+  }
+  if (transforms.length > 0) {
+    style.transform = transforms.join(' ');
+    style.transformOrigin = 'top left';
+  }
+
+  // Font family
+  const fontFamily = labelStyle.fontFamily || label.fontFamily;
+  if (fontFamily) {
+    style.fontFamily = fontFamily;
+  }
+
+  // Text align
+  const textAlign = labelStyle.textAlign || label.textAlign;
+  if (textAlign) {
+    style.textAlign = textAlign;
+  }
+
+  // Background
+  const backgroundColor = labelStyle.backgroundColor || label.backgroundColor;
+  if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+    if (label.padding) {
+      style.padding = label.padding;
+    }
+    if (label.borderRadius) {
+      style.borderRadius = label.borderRadius;
+    }
+  }
+
+  // Text shadow
+  const textShadow = labelStyle.textShadow || label.textShadow;
+  if (textShadow) {
+    style.textShadow = textShadow;
+  }
+
+  // Line height
+  const lineHeight = labelStyle.lineHeight || label.lineHeight;
+  if (lineHeight) {
+    style.lineHeight = lineHeight;
+  }
+
+  // Opacity
+  if (label.opacity !== undefined) {
+    style.opacity = label.opacity;
+  }
+
+  console.log('Generated style:', style);
+  return style;
 }
 </script>
 
@@ -197,19 +344,21 @@ function getLabelStyle(label) {
       :key="label.id"
       :style="getLabelStyle(label)"
       class="label-overlay"
-    >
-      {{ label.text }}
-    </div>
+      v-html="label.text"
+    ></div>
   </div>
 </template>
 
 <style scoped>
 .layout-renderer {
   background-color: #000;
+  position: relative;
 }
 
 .layout-container {
   position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .background-shape {
@@ -218,5 +367,6 @@ function getLabelStyle(label) {
 
 .label-overlay {
   pointer-events: none;
+  user-select: none;
 }
 </style>
