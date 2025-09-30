@@ -96,10 +96,12 @@ function getShapeStyle(shape) {
   return baseStyle;
 }
 
-// NUEVO: Función para posicionamiento del contenedor externo (como Angular)
+// Función para posicionamiento del label con coordenadas absolutas en píxeles
 function getLabelContainerStyle(label) {
   const x = label.position?.x ?? label.x;
   const y = label.position?.y ?? label.y;
+
+  // Canvas fijo de 1920x1080 (como Angular/Konva)
   const CANVAS_WIDTH = 1920;
   const CANVAS_HEIGHT = 1080;
 
@@ -109,8 +111,17 @@ function getLabelContainerStyle(label) {
     userSelect: 'none'
   };
 
-  // Convertir porcentaje a píxeles
+  // Convertir porcentaje (0-100) a píxeles absolutos
   if (x !== undefined) {
+    style.left = `${(x / 100) * CANVAS_WIDTH}px`;
+  }
+
+  if (y !== undefined) {
+    style.top = `${(y / 100) * CANVAS_HEIGHT}px`;
+  }
+
+  // Convertir porcentaje a píxeles
+/* if (x !== undefined) {
     if (typeof x === 'string' && x.includes('px')) {
       style.left = x;
     } else if (typeof x === 'string' && x.includes('%')) {
@@ -130,7 +141,7 @@ function getLabelContainerStyle(label) {
     } else {
       style.top = `${(y / 100) * CANVAS_HEIGHT}px`;
     }
-  }
+  }*/
 
   // Z-index
   style.zIndex = label.zIndex ?? 100;
@@ -162,12 +173,24 @@ function getLabelInnerStyle(label) {
     style.transformOrigin = 'top left'; // Importante: rotación desde top-left
   }
 
-  // Aplicar estilos de texto
+
+  // Font size - aplicar factor de escala Android TV (240 DPI / 160 baseline = 1.5)
+  const ANDROID_TV_SCALE = 240 / 160; // 1.5x scale factor for 240dpi
   const fontSize = labelStyle.fontSize || label.fontSize || 16;
+
   if (typeof fontSize === 'string') {
-    style.fontSize = fontSize;
+    // Si ya viene con unidades, parsear y escalar
+    const numericSize = parseFloat(fontSize);
+    if (!isNaN(numericSize)) {
+      const scaledSize = numericSize * ANDROID_TV_SCALE;
+      style.fontSize = `${scaledSize}px`;
+    } else {
+      style.fontSize = fontSize;
+    }
   } else {
-    style.fontSize = `${fontSize}px`;
+    // Si es número, escalar y convertir a píxeles
+    const scaledSize = fontSize * ANDROID_TV_SCALE;
+    style.fontSize = `${scaledSize}px`;
   }
 
   style.color = labelStyle.color || label.color || '#ffffff';
@@ -176,11 +199,11 @@ function getLabelInnerStyle(label) {
   style.fontFamily = labelStyle.fontFamily || label.fontFamily || 'inherit';
 
   // Text shadow por defecto (como Angular)
-  if (labelStyle.textShadow || label.textShadow) {
+  /*if (labelStyle.textShadow || label.textShadow) {
     style.textShadow = labelStyle.textShadow || label.textShadow;
   } else {
     style.textShadow = '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)';
-  }
+  }*/
 
   // Width y Height - SOLO aplicar si están definidos explícitamente
   // Si no hay width, el contenedor se ajustará al contenido (sin wrap)
@@ -357,19 +380,16 @@ function renderLabelText(label) {
 .layout-renderer {
   background-color: #000;
   position: relative;
-}
-
-.layout-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  /* Dimensiones fijas como canvas de 1920x1080 (igual que Angular/Konva) */
+  width: 1920px;
+  height: 1080px;
 }
 
 .background-shape {
   pointer-events: none;
 }
 
-/* NUEVO: Estilos para la estructura de dos contenedores (como Angular) */
+/* Estilos para labels con coordenadas absolutas en píxeles */
 .label-container {
   position: absolute;
   pointer-events: none;
