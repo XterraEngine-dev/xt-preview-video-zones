@@ -161,29 +161,10 @@ export function isAndroidCompatible(fontValue) {
 /**
  * Carga Google Fonts necesarias
  * Esta función debe ser llamada al inicializar la app
+ * NOTA: Las fuentes ya se cargan en index.html para mejor rendimiento
  */
 export function loadGoogleFonts() {
-  // Lista de fuentes de Google Fonts a cargar
-  const googleFontsToLoad = [
-    'Roboto:300,400,500,700',
-    'Roboto+Condensed:300,400,700',
-    'Roboto+Mono:400,700',
-    'Roboto+Slab:400,700',
-    'Open+Sans:300,400,600,700',
-    'Lato:300,400,700',
-    'Source+Sans+Pro:300,400,600,700',
-    'Nunito:300,400,600,700'
-  ];
-
-  // Crear link element para cargar las fuentes
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?${googleFontsToLoad.map(f => `family=${f}`).join('&')}&display=swap`;
-
-  // Agregar al head
-  document.head.appendChild(link);
-
-  console.log('✅ Google Fonts loaded:', googleFontsToLoad.length, 'families');
+  console.log('✅ Google Fonts ya están cargadas desde index.html');
 }
 
 export default {

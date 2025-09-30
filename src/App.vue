@@ -46,12 +46,18 @@ onMounted(() => {
   padding: 0;
   background: #000;
   position: relative;
+  /* Asegurar que no haya transform scale aplicado */
+  transform: none;
+  zoom: 1;
 }
 
 @media (max-width: 1920px) {
   .app-container {
-    width: 100vw;
-    height: calc(100vw * 1080 / 1920);
+    /* Usar transform scale en lugar de cambiar width/height para mantener precisión */
+    width: 1920px;
+    height: 1080px;
+    transform: scale(calc(100vw / 1920));
+    transform-origin: top left;
   }
 }
 </style>

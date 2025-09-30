@@ -445,10 +445,20 @@ function renderLabelText(label) {
   position: absolute;
   pointer-events: none;
   user-select: none;
+  /* Asegurar que no herede estilos no deseados */
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: content-box;
 }
 
 .label-inner {
   position: relative;
+  /* Asegurar que no herede estilos no deseados */
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: content-box;
 }
 
 .label-text {
@@ -457,5 +467,15 @@ function renderLabelText(label) {
   overflow: visible; /* Permitir que el texto sea visible completo */
   line-height: 1;
   vertical-align: top;
+  /* Resetear estilos heredados del CSS global */
+  margin: 0;
+  padding: 0;
+  border: none;
+  /* Permitir que font-weight se aplique desde inline styles */
+  font-weight: inherit;
+  /* Asegurar que text-rendering sea consistente */
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 </style>
