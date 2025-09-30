@@ -1,12 +1,18 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import CampaignPlayer from './components/CampaignPlayer.vue';
 import QuickDebug from './components/QuickDebug.vue';
+import { loadGoogleFonts } from './services/fontManager.js';
 
 // Set your campaign ID here
 const campaignId = ref('3hqlyzsbul0fqmq'); // Replace with actual campaign ID
 const autoplay = ref(true);
 const debugMode = ref(false); // Set to false for production
+
+// Cargar fuentes de Google al iniciar la app
+onMounted(() => {
+  loadGoogleFonts();
+});
 </script>
 
 <template>

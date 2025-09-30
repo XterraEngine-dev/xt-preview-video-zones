@@ -151,7 +151,11 @@ function getLabelContainerStyle(label) {
 
 // NUEVO: Función para el contenedor interno con transformación y estilo (como Angular)
 function getLabelInnerStyle(label) {
+  console.log('getLabelInnerStyle - Label completo:', JSON.stringify(label, null, 2));
+
   const labelStyle = label.style || {};
+  console.log('getLabelInnerStyle - labelStyle extraído:', labelStyle);
+
   const style = {
     position: 'relative',
     display: 'inline-block' // Cambiado a inline-block para que el tamaño se ajuste al contenido
@@ -176,27 +180,79 @@ function getLabelInnerStyle(label) {
 
   // Font size - aplicar factor de escala Android TV (240 DPI / 160 baseline = 1.5)
   const ANDROID_TV_SCALE = 240 / 160; // 1.5x scale factor for 240dpi
-  const fontSize = labelStyle.fontSize || label.fontSize || 16;
+  const fontSize = labelStyle.fontSize || label.fontSize;
 
-  if (typeof fontSize === 'string') {
-    // Si ya viene con unidades, parsear y escalar
-    const numericSize = parseFloat(fontSize);
-    if (!isNaN(numericSize)) {
-      const scaledSize = numericSize * ANDROID_TV_SCALE;
-      style.fontSize = `${scaledSize}px`;
+  if (fontSize) {
+    if (typeof fontSize === 'string') {
+      // Si ya viene con unidades (ej: "72px"), parsear y escalar
+      const numericSize = parseFloat(fontSize);
+      if (!isNaN(numericSize)) {
+        const scaledSize = numericSize * ANDROID_TV_SCALE;
+        style.fontSize = `${scaledSize}px`;
+      } else {
+        style.fontSize = fontSize;
+      }
     } else {
-      style.fontSize = fontSize;
+      // Si es número, escalar y convertir a píxeles
+      const scaledSize = fontSize * ANDROID_TV_SCALE;
+      style.fontSize = `${scaledSize}px`;
     }
   } else {
-    // Si es número, escalar y convertir a píxeles
-    const scaledSize = fontSize * ANDROID_TV_SCALE;
-    style.fontSize = `${scaledSize}px`;
+    // Valor por defecto
+    style.fontSize = `${16 * ANDROID_TV_SCALE}px`; // 24px
   }
 
+  // Color
   style.color = labelStyle.color || label.color || '#ffffff';
-  style.fontWeight = labelStyle.fontWeight || label.fontWeight || 'normal';
-  style.fontStyle = labelStyle.fontStyle || label.fontStyle || 'normal';
-  style.fontFamily = labelStyle.fontFamily || label.fontFamily || 'inherit';
+
+  // Font Weight (bold, normal, 100-900)
+  const fontWeight = labelStyle.fontWeight || label.fontWeight;
+  console.log('Font Weight - labelStyle.fontWeight:', labelStyle.fontWeight, 'label.fontWeight:', label.fontWeight, 'Final:', fontWeight);
+
+  // QUEMADO: forzar bold para testing
+  style.fontWeight = labelStyle.fontWeight;
+  console.log('Font Weight QUEMADO A BOLD');
+
+  // Font Style (italic, normal)
+  const fontStyle = labelStyle.fontStyle || label.fontStyle;
+  console.log('Font Style - labelStyle.fontStyle:', labelStyle.fontStyle, 'label.fontStyle:', label.fontStyle, 'Final:', fontStyle);
+  if (fontStyle !== undefined && fontStyle !== null && fontStyle !== '') {
+    style.fontStyle = fontStyle;
+    console.log('Font Style APLICADO:', style.fontStyle);
+  } else {
+    console.warn('Font Style NO aplicado - valor:', fontStyle);
+  }
+
+  // Font Family
+  const fontFamily = labelStyle.fontFamily || label.fontFamily;
+  console.log('Font Family - labelStyle.fontFamily:', labelStyle.fontFamily, 'label.fontFamily:', label.fontFamily, 'Final:', fontFamily);
+  if (fontFamily) {
+    // Limpiar comillas escapadas: "\"Roboto Slab\"" -> "Roboto Slab"
+    // Vue necesita el valor limpio para aplicarlo correctamente
+    let cleanedFontFamily = fontFamily;
+
+    // Si tiene comillas escapadas (\"), removerlas y dejar solo el nombre
+    if (typeof cleanedFontFamily === 'string') {
+      // Eliminar las comillas invertidas \" y dejar el string limpio
+      cleanedFontFamily = cleanedFontFamily.replace(/\\"/g, '"');
+    }
+
+    style.fontFamily = cleanedFontFamily;
+    console.log('Font Family limpiado:', cleanedFontFamily);
+  } else {
+    // Si es null o undefined, usar string vacío
+    style.fontFamily = '';
+    console.log('Font Family es null/undefined, usando string vacío');
+  }
+
+  console.log('Label style applied:', {
+    text: label.text,
+    fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    fontStyle: style.fontStyle,
+    fontFamily: style.fontFamily,
+    color: style.color
+  });
 
   // Text shadow por defecto (como Angular)
   /*if (labelStyle.textShadow || label.textShadow) {
@@ -367,8 +423,10 @@ function renderLabelText(label) {
         class="label-inner"
         :style="getLabelInnerStyle(label)"
       >
+        <!-- Aplicar estilos de texto directamente al span -->
         <span
           class="label-text"
+          :style="getLabelInnerStyle(label)"
           v-html="renderLabelText(label)"
         ></span>
       </div>
