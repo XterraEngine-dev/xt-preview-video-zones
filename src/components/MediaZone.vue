@@ -105,6 +105,7 @@ onUnmounted(() => {
       muted
       autoplay
       playsinline
+      loop
     ></video>
 
     <!-- Image -->
