@@ -207,20 +207,14 @@ function getLabelInnerStyle(label) {
 
   // Font Weight (bold, normal, 100-900)
   const fontWeight = labelStyle.fontWeight || label.fontWeight;
-  console.log('Font Weight - labelStyle.fontWeight:', labelStyle.fontWeight, 'label.fontWeight:', label.fontWeight, 'Final:', fontWeight);
-
-  // QUEMADO: forzar bold para testing
-  style.fontWeight = labelStyle.fontWeight;
-  console.log('Font Weight QUEMADO A BOLD');
+  if (fontWeight) {
+    style.fontWeight = fontWeight;
+  }
 
   // Font Style (italic, normal)
   const fontStyle = labelStyle.fontStyle || label.fontStyle;
-  console.log('Font Style - labelStyle.fontStyle:', labelStyle.fontStyle, 'label.fontStyle:', label.fontStyle, 'Final:', fontStyle);
-  if (fontStyle !== undefined && fontStyle !== null && fontStyle !== '') {
+  if (fontStyle) {
     style.fontStyle = fontStyle;
-    console.log('Font Style APLICADO:', style.fontStyle);
-  } else {
-    console.warn('Font Style NO aplicado - valor:', fontStyle);
   }
 
   // Font Family
@@ -254,12 +248,11 @@ function getLabelInnerStyle(label) {
     color: style.color
   });
 
-  // Text shadow por defecto (como Angular)
-  /*if (labelStyle.textShadow || label.textShadow) {
-    style.textShadow = labelStyle.textShadow || label.textShadow;
-  } else {
-    style.textShadow = '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)';
-  }*/
+  // Text shadow (solo aplicar si está definido explícitamente)
+  const textShadow = labelStyle.textShadow || label.textShadow;
+  if (textShadow !== undefined && textShadow !== null && textShadow !== '') {
+    style.textShadow = textShadow;
+  }
 
   // Width y Height - SOLO aplicar si están definidos explícitamente
   // Si no hay width, el contenedor se ajustará al contenido (sin wrap)
