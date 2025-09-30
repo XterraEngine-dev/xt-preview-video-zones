@@ -4,14 +4,21 @@ import CampaignPlayer from './components/CampaignPlayer.vue';
 import QuickDebug from './components/QuickDebug.vue';
 import { loadGoogleFonts } from './services/fontManager.js';
 
-// Set your campaign ID here
-const campaignId = ref('3hqlyzsbul0fqmq'); // Replace with actual campaign ID
+// Función para obtener parámetros de la URL
+function getUrlParameter(name) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name);
+}
+
+// Leer campaignId desde la URL (?campaignId=xxx) o usar el valor por defecto
+const campaignId = ref(getUrlParameter('campaignId') || 'bzihhcwb7vo1omm');
 const autoplay = ref(true);
 const debugMode = ref(false); // Set to false for production
 
 // Cargar fuentes de Google al iniciar la app
 onMounted(() => {
   loadGoogleFonts();
+  console.log('Campaign ID:', campaignId.value);
 });
 </script>
 

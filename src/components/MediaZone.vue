@@ -89,7 +89,8 @@ onUnmounted(() => {
 
 <template>
   <div
-    :class="['media-zone', zoneConfig.style]"
+    class="media-zone"
+    :style="zoneConfig.style"
     :data-zone-id="zoneId"
   >
     <!-- Video -->
@@ -98,7 +99,7 @@ onUnmounted(() => {
       ref="videoRef"
       :src="mediaUrl"
       :key="mediaUrl"
-      class="w-full h-full object-cover"
+      style="width: 100%; height: 100%; object-fit: cover;"
       @ended="handleVideoEnd"
       @error="handleVideoError"
       muted
@@ -111,12 +112,12 @@ onUnmounted(() => {
       v-else-if="mediaType === 'image' && mediaUrl"
       :src="mediaUrl"
       :key="mediaUrl"
-      class="w-full h-full object-cover"
+      style="width: 100%; height: 100%; object-fit: cover;"
       :alt="zoneId"
     />
 
     <!-- Placeholder -->
-    <div v-else class="w-full h-full bg-gray-900"></div>
+    <div v-else style="width: 100%; height: 100%; background: #222;"></div>
   </div>
 </template>
 
@@ -125,5 +126,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   background: #000;
+  flex-shrink: 0;
 }
 </style>

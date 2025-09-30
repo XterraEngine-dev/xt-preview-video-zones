@@ -339,7 +339,7 @@ function renderLabelText(label) {
     ></div>
 
     <!-- Layout Container - Simple Layouts (no wrapper needed) -->
-    <div v-if="!wrapperConfig.needsWrapper" :class="containerStyle">
+    <div v-if="!wrapperConfig.needsWrapper" :style="containerStyle">
       <MediaZone
         v-for="zone in zones"
         :key="zone.id"
@@ -350,17 +350,17 @@ function renderLabelText(label) {
     </div>
 
     <!-- Layout Container - Complex Layouts (with wrapper) -->
-    <div v-else :class="wrapperConfig.mainContainer">
+    <div v-else :style="wrapperConfig.mainContainer">
       <template v-if="layoutType === 'main-left'">
         <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
           <MediaZone :zone-id="zones[2].id" :zone-config="zones[2]" :assignment="getAssignmentForZone(zones[2].id)" />
         </div>
       </template>
 
       <template v-else-if="layoutType === 'main-right'">
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
         </div>
@@ -369,14 +369,14 @@ function renderLabelText(label) {
 
       <template v-else-if="layoutType === 'main-top'">
         <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
           <MediaZone :zone-id="zones[2].id" :zone-config="zones[2]" :assignment="getAssignmentForZone(zones[2].id)" />
         </div>
       </template>
 
       <template v-else-if="layoutType === 'main-bottom'">
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
         </div>
@@ -384,7 +384,7 @@ function renderLabelText(label) {
       </template>
 
       <template v-else-if="layoutType === 'two-top-one-bottom'">
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
         </div>
@@ -393,14 +393,14 @@ function renderLabelText(label) {
 
       <template v-else-if="layoutType === 'one-top-two-bottom'">
         <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
           <MediaZone :zone-id="zones[2].id" :zone-config="zones[2]" :assignment="getAssignmentForZone(zones[2].id)" />
         </div>
       </template>
 
       <template v-else-if="layoutType === 'two-left-one-right'">
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
         </div>
@@ -409,7 +409,7 @@ function renderLabelText(label) {
 
       <template v-else-if="layoutType === 'one-left-two-right'">
         <MediaZone :zone-id="zones[0].id" :zone-config="zones[0]" :assignment="getAssignmentForZone(zones[0].id)" />
-        <div :class="wrapperConfig.secondaryContainer">
+        <div :style="wrapperConfig.secondaryContainer">
           <MediaZone :zone-id="zones[1].id" :zone-config="zones[1]" :assignment="getAssignmentForZone(zones[1].id)" />
           <MediaZone :zone-id="zones[2].id" :zone-config="zones[2]" :assignment="getAssignmentForZone(zones[2].id)" />
         </div>

@@ -8,7 +8,7 @@ onMounted(async () => {
   try {
     await authenticatePocketBase();
 
-    const campaign = await getCampaignById('3hqlyzsbul0fqmq');
+    const campaign = await getCampaignById('xxxx');
     debug.value.campaign = campaign;
     console.log('1. Campaign:', campaign);
 
