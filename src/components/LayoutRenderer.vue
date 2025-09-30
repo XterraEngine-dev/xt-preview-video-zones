@@ -96,29 +96,28 @@ function getShapeStyle(shape) {
   return baseStyle;
 }
 
-function getLabelStyle(label) {
-  console.log('Processing label style:', label);
+// NUEVO: Función para posicionamiento del contenedor externo (como Angular)
+function getLabelContainerStyle(label) {
+  const x = label.position?.x ?? label.x;
+  const y = label.position?.y ?? label.y;
+  const CANVAS_WIDTH = 1920;
+  const CANVAS_HEIGHT = 1080;
 
   const style = {
     position: 'absolute',
     pointerEvents: 'none',
-    userSelect: 'none',
-    whiteSpace: 'nowrap',
-    display: 'inline-block'
+    userSelect: 'none'
   };
 
-  // Position - puede estar en label.position.x/y o label.x/y
-  const x = label.position?.x ?? label.x;
-  const y = label.position?.y ?? label.y;
-
+  // Convertir porcentaje a píxeles
   if (x !== undefined) {
     if (typeof x === 'string' && x.includes('px')) {
       style.left = x;
     } else if (typeof x === 'string' && x.includes('%')) {
-      style.left = x;
+      const percentValue = parseFloat(x);
+      style.left = `${(percentValue / 100) * CANVAS_WIDTH}px`;
     } else {
-      // Es un número, lo convertimos a porcentaje
-      style.left = `${x}%`;
+      style.left = `${(x / 100) * CANVAS_WIDTH}px`;
     }
   }
 
@@ -126,94 +125,78 @@ function getLabelStyle(label) {
     if (typeof y === 'string' && y.includes('px')) {
       style.top = y;
     } else if (typeof y === 'string' && y.includes('%')) {
-      style.top = y;
+      const percentValue = parseFloat(y);
+      style.top = `${(percentValue / 100) * CANVAS_HEIGHT}px`;
     } else {
-      // Es un número, lo convertimos a porcentaje
-      style.top = `${y}%`;
+      style.top = `${(y / 100) * CANVAS_HEIGHT}px`;
     }
-  }
-
-  // Style object - puede estar en label.style o directamente en label
-  const labelStyle = label.style || {};
-
-  // Font size
-  const fontSize = labelStyle.fontSize || label.fontSize;
-  if (fontSize) {
-    if (typeof fontSize === 'string') {
-      style.fontSize = fontSize;
-    } else {
-      style.fontSize = `${fontSize}px`;
-    }
-  }
-
-  // Font weight
-  const fontWeight = labelStyle.fontWeight || label.fontWeight;
-  if (fontWeight) {
-    style.fontWeight = fontWeight;
-  }
-
-  // Font style
-  const fontStyle = labelStyle.fontStyle || label.fontStyle;
-  if (fontStyle) {
-    style.fontStyle = fontStyle;
-  }
-
-  // Color
-  const color = labelStyle.color || label.color;
-  if (color) {
-    style.color = color;
   }
 
   // Z-index
-  if (label.zIndex !== undefined) {
-    style.zIndex = label.zIndex;
-  } else {
-    style.zIndex = 100;
-  }
+  style.zIndex = label.zIndex ?? 100;
 
-  // Width y Height - removemos width para permitir texto horizontal completo
-  // El width en labels es opcional, si no está, el texto se expande horizontalmente
-  if (label.width !== undefined && label.width !== null) {
-    // Solo aplicar width si está explícitamente definido y queremos limitarlo
-    // En la mayoría de casos, omitiremos esto para permitir texto horizontal
-    if (typeof label.width === 'string') {
-      style.maxWidth = label.width;
-    } else if (label.width > 0) {
-      style.maxWidth = `${label.width}px`;
-    }
-  }
+  return style;
+}
 
-  if (label.height !== undefined) {
-    if (typeof label.height === 'string') {
-      style.height = label.height;
-    } else {
-      style.height = `${label.height}px`;
-    }
-  }
+// NUEVO: Función para el contenedor interno con transformación y estilo (como Angular)
+function getLabelInnerStyle(label) {
+  const labelStyle = label.style || {};
+  const style = {
+    position: 'relative',
+    display: 'inline-block' // Cambiado a inline-block para que el tamaño se ajuste al contenido
+  };
 
-  // Transform
+  // Transforms (sin translate porque las coordenadas ya están correctas)
   const transforms = [];
-  if (label.rotation !== undefined && label.rotation !== 0) {
-    transforms.push(`rotate(${label.rotation}deg)`);
-  }
+
   if (label.scale !== undefined && label.scale !== 1) {
     transforms.push(`scale(${label.scale})`);
   }
-  if (transforms.length > 0) {
-    style.transform = transforms.join(' ');
-    style.transformOrigin = 'top left';
+
+  if (label.rotation !== undefined && label.rotation !== 0) {
+    transforms.push(`rotate(${label.rotation}deg)`);
   }
 
-  // Font family
-  const fontFamily = labelStyle.fontFamily || label.fontFamily;
-  if (fontFamily) {
-    style.fontFamily = fontFamily;
+  if (transforms.length > 0) {
+    style.transform = transforms.join(' ');
+    style.transformOrigin = 'top left'; // Importante: rotación desde top-left
+  }
+
+  // Aplicar estilos de texto
+  const fontSize = labelStyle.fontSize || label.fontSize || 16;
+  if (typeof fontSize === 'string') {
+    style.fontSize = fontSize;
+  } else {
+    style.fontSize = `${fontSize}px`;
+  }
+
+  style.color = labelStyle.color || label.color || '#ffffff';
+  style.fontWeight = labelStyle.fontWeight || label.fontWeight || 'normal';
+  style.fontStyle = labelStyle.fontStyle || label.fontStyle || 'normal';
+  style.fontFamily = labelStyle.fontFamily || label.fontFamily || 'inherit';
+
+  // Text shadow por defecto (como Angular)
+  if (labelStyle.textShadow || label.textShadow) {
+    style.textShadow = labelStyle.textShadow || label.textShadow;
+  } else {
+    style.textShadow = '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)';
+  }
+
+  // Width y Height - SOLO aplicar si están definidos explícitamente
+  // Si no hay width, el contenedor se ajustará al contenido (sin wrap)
+  if (label.width !== undefined && label.width !== null && label.width > 0) {
+    style.width = typeof label.width === 'string' ? label.width : `${label.width}px`;
+    style.minWidth = style.width; // Asegurar que no se reduzca más
+  }
+
+  if (label.height !== undefined && label.height !== null && label.height > 0) {
+    style.height = typeof label.height === 'string' ? label.height : `${label.height}px`;
+    style.minHeight = style.height; // Asegurar que no se reduzca más
   }
 
   // Text align
-  const textAlign = labelStyle.textAlign || label.textAlign;
-  if (textAlign) {
-    style.textAlign = textAlign;
+  if (labelStyle.textAlign || label.textAlign) {
+    style.textAlign = labelStyle.textAlign || label.textAlign;
   }
 
   // Background
@@ -228,16 +211,9 @@ function getLabelStyle(label) {
     }
   }
 
-  // Text shadow
-  const textShadow = labelStyle.textShadow || label.textShadow;
-  if (textShadow) {
-    style.textShadow = textShadow;
-  }
-
   // Line height
-  const lineHeight = labelStyle.lineHeight || label.lineHeight;
-  if (lineHeight) {
-    style.lineHeight = lineHeight;
+  if (labelStyle.lineHeight || label.lineHeight) {
+    style.lineHeight = labelStyle.lineHeight || label.lineHeight;
   }
 
   // Opacity
@@ -245,8 +221,27 @@ function getLabelStyle(label) {
     style.opacity = label.opacity;
   }
 
-  console.log('Generated style:', style);
   return style;
+}
+
+function renderLabelText(label) {
+  if (!label.text) {
+    return '<span style="color: #999; font-style: italic;">Empty label</span>';
+  }
+
+  // Process line breaks - convert \n to <br>
+  let processedText = label.text.replace(/\n/g, '<br>');
+
+  // Normalizar espacios múltiples pero mantener los saltos de línea <br>
+  // No colapsar espacios dentro de las líneas para respetar el formato original
+  processedText = processedText
+    .split('<br>')
+    .map(line => line.trim())
+    .join('<br>');
+
+  // TODO: Agregar soporte para variables {{variable}} si es necesario en el futuro
+
+  return processedText;
 }
 </script>
 
@@ -342,10 +337,19 @@ function getLabelStyle(label) {
     <div
       v-for="label in labels"
       :key="label.id"
-      :style="getLabelStyle(label)"
-      class="label-overlay"
-      v-html="label.text"
-    ></div>
+      class="label-container"
+      :style="getLabelContainerStyle(label)"
+    >
+      <div
+        class="label-inner"
+        :style="getLabelInnerStyle(label)"
+      >
+        <span
+          class="label-text"
+          v-html="renderLabelText(label)"
+        ></span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -365,8 +369,22 @@ function getLabelStyle(label) {
   pointer-events: none;
 }
 
-.label-overlay {
+/* NUEVO: Estilos para la estructura de dos contenedores (como Angular) */
+.label-container {
+  position: absolute;
   pointer-events: none;
   user-select: none;
+}
+
+.label-inner {
+  position: relative;
+}
+
+.label-text {
+  display: inline-block;
+  white-space: nowrap; /* No permitir saltos de línea automáticos */
+  overflow: visible; /* Permitir que el texto sea visible completo */
+  line-height: 1;
+  vertical-align: top;
 }
 </style>
