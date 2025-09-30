@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  xt-video-preview:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xt-video-preview
+    ports:
+      - "5225:5225"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - xt-network
+
+networks:
+  xt-network:
+    driver: bridge
