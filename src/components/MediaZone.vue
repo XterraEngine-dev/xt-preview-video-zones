@@ -37,13 +37,28 @@ const mediaType = computed(() => {
   return currentMedia.value?.type || 'video';
 });
 
+// Determinar si el video actual debe hacer loop
+const shouldLoop = computed(() => {
+  // Si solo hay un video en la zona, hacer loop infinito
+  // Si hay múltiples videos, NO hacer loop, avanzar al siguiente
+  return props.assignment?.media?.length === 1;
+});
+
 function playNext() {
   if (!props.assignment?.media?.length) return;
-  currentIndex.value = (currentIndex.value + 1) % props.assignment.media.length;
+
+  // Si hay múltiples items, avanzar al siguiente
+  if (props.assignment.media.length > 1) {
+    currentIndex.value = (currentIndex.value + 1) % props.assignment.media.length;
+  }
+  // Si solo hay un item, se queda en loop (gestionado por el atributo loop del video)
 }
 
 function handleVideoEnd() {
-  playNext();
+  // Solo avanzar si hay múltiples videos
+  if (props.assignment?.media?.length > 1) {
+    playNext();
+  }
 }
 
 function handleVideoError(event) {
@@ -99,13 +114,13 @@ onUnmounted(() => {
       ref="videoRef"
       :src="mediaUrl"
       :key="mediaUrl"
-      style="width: 100%; height: 100%; object-fit: cover;"
+      style="width: 100%; height: 100%; object-fit: fill;"
       @ended="handleVideoEnd"
       @error="handleVideoError"
       muted
       autoplay
       playsinline
-      loop
+      :loop="shouldLoop"
     ></video>
 
     <!-- Image -->
@@ -113,7 +128,7 @@ onUnmounted(() => {
       v-else-if="mediaType === 'image' && mediaUrl"
       :src="mediaUrl"
       :key="mediaUrl"
-      style="width: 100%; height: 100%; object-fit: cover;"
+      style="width: 100%; height: 100%; object-fit: fill;"
       :alt="zoneId"
     />
 
