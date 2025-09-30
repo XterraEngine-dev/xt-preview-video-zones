@@ -1,47 +1,51 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { ref } from 'vue';
+import CampaignPlayer from './components/CampaignPlayer.vue';
+import QuickDebug from './components/QuickDebug.vue';
+
+// Set your campaign ID here
+const campaignId = ref('3hqlyzsbul0fqmq'); // Replace with actual campaign ID
+const autoplay = ref(true);
+const debugMode = ref(false); // Set to false for production
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div class="app-container">
+    <!-- Debug Mode -->
+    <QuickDebug v-if="debugMode" />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <!-- Campaign Player - Full Screen -->
+    <CampaignPlayer
+      v-else-if="campaignId"
+      :campaign-id="campaignId"
+      :autoplay="autoplay"
+    />
+
+    <!-- Fallback when no campaign ID -->
+    <div v-else class="flex items-center justify-center h-screen bg-black text-white">
+      <div class="text-center">
+        <h1 class="text-3xl mb-4">XT Video Preview</h1>
+        <p class="text-gray-400">Please set a campaign ID in App.vue</p>
+      </div>
     </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
+.app-container {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  margin: 0 auto;
+  padding: 0;
+  background: #000;
+  position: relative;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+@media (max-width: 1920px) {
+  .app-container {
+    width: 100vw;
+    height: calc(100vw * 1080 / 1920);
   }
 }
 </style>
