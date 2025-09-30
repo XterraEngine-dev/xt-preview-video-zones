@@ -19,6 +19,8 @@ const campaign = ref(null);
 const layouts = ref([]);
 const currentLayoutIndex = ref(0);
 const isLoading = ref(true);
+const loadingProgress = ref(0);
+const loadingMessage = ref('Loading campaign...');
 const error = ref(null);
 
 const currentLayout = computed(() => {
@@ -26,23 +28,62 @@ const currentLayout = computed(() => {
   return layouts.value[currentLayoutIndex.value];
 });
 
+// Función para precargar un recurso (video o imagen)
+async function preloadResource(url, type) {
+  return new Promise((resolve, reject) => {
+    if (type === 'video') {
+      const video = document.createElement('video');
+      video.preload = 'auto';
+      video.onloadeddata = () => {
+        console.log('✓ Video preloaded:', url);
+        resolve();
+      };
+      video.onerror = (err) => {
+        console.warn('✗ Failed to preload video:', url, err);
+        reject(err);
+      };
+      video.src = url;
+    } else if (type === 'image') {
+      const img = new Image();
+      img.onload = () => {
+        console.log('✓ Image preloaded:', url);
+        resolve();
+      };
+      img.onerror = (err) => {
+        console.warn('✗ Failed to preload image:', url, err);
+        reject(err);
+      };
+      img.src = url;
+    } else {
+      resolve(); // Unknown type, skip
+    }
+  });
+}
+
 async function loadCampaign() {
   try {
     isLoading.value = true;
+    loadingProgress.value = 0;
+    loadingMessage.value = 'Authenticating...';
     error.value = null;
 
     // Authenticate first
     await authenticatePocketBase();
+    loadingProgress.value = 10;
 
     // Load campaign
+    loadingMessage.value = 'Loading campaign data...';
     const campaignData = await getCampaignById(props.campaignId);
     campaign.value = campaignData;
+    loadingProgress.value = 20;
 
     console.log('Campaign loaded:', campaignData);
 
     // Load all layouts for this campaign
     if (campaignData.layouts && campaignData.layouts.length > 0) {
+      loadingMessage.value = 'Loading layouts...';
       const layoutsData = await getLayoutsByIds(campaignData.layouts);
+      loadingProgress.value = 30;
 
       console.log('Layouts loaded:', layoutsData);
 
@@ -50,6 +91,9 @@ async function loadCampaign() {
       const sortedLayouts = campaignData.layouts
         .map(layoutId => layoutsData.find(l => l.id === layoutId))
         .filter(Boolean);
+
+      // Collect all media URLs for preloading
+      const mediaToPreload = [];
 
       // Process each layout to load media files from files_library
       for (const layout of sortedLayouts) {
@@ -91,6 +135,13 @@ async function loadCampaign() {
                   if (fileRecord) {
                     const url = getMediaUrl(fileRecord);
                     console.log('✓ Generated URL for media:', mediaItem.id, '→', url);
+
+                    // Add to preload list
+                    mediaToPreload.push({
+                      url,
+                      type: mediaItem.type || 'video'
+                    });
+
                     return {
                       id: mediaItem.id,
                       url: url,
@@ -119,10 +170,41 @@ async function loadCampaign() {
       }
 
       layouts.value = sortedLayouts;
+      loadingProgress.value = 50;
       console.log('All layouts processed with media:', layouts.value);
+
+      // Preload all media resources
+      if (mediaToPreload.length > 0) {
+        loadingMessage.value = `Preloading media (0/${mediaToPreload.length})...`;
+        console.log(`Starting to preload ${mediaToPreload.length} media files...`);
+
+        let loadedCount = 0;
+        const progressStep = 50 / mediaToPreload.length; // Remaining 50% for preloading
+
+        for (const media of mediaToPreload) {
+          try {
+            await preloadResource(media.url, media.type);
+            loadedCount++;
+            loadingProgress.value = 50 + (progressStep * loadedCount);
+            loadingMessage.value = `Preloading media (${loadedCount}/${mediaToPreload.length})...`;
+          } catch (err) {
+            console.warn('Failed to preload media, continuing...', media.url, err);
+            // Continue even if one fails
+            loadedCount++;
+            loadingProgress.value = 50 + (progressStep * loadedCount);
+            loadingMessage.value = `Preloading media (${loadedCount}/${mediaToPreload.length})...`;
+          }
+        }
+
+        console.log(`✅ Preloading complete: ${loadedCount}/${mediaToPreload.length} media files loaded`);
+      }
     }
 
-    isLoading.value = false;
+    loadingProgress.value = 100;
+    loadingMessage.value = 'Ready!';
+    setTimeout(() => {
+      isLoading.value = false;
+    }, 500);
   } catch (err) {
     console.error('Error loading campaign:', err);
     error.value = err.message;
@@ -208,9 +290,17 @@ defineExpose({
   <div class="campaign-player w-full h-full relative">
     <!-- Loading State -->
     <div v-if="isLoading" class="w-full h-full flex items-center justify-center bg-black text-white">
-      <div class="text-center">
-        <div class="text-2xl mb-4">Loading Campaign...</div>
-        <div class="animate-pulse">⏳</div>
+      <div class="text-center" style="max-width: 600px; padding: 20px;">
+        <div class="text-2xl mb-4">{{ loadingMessage }}</div>
+        <div class="animate-pulse mb-4">⏳</div>
+        <!-- Progress Bar -->
+        <div style="width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden;">
+          <div
+            style="height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); transition: width 0.3s ease;"
+            :style="{ width: loadingProgress + '%' }"
+          ></div>
+        </div>
+        <div class="text-sm mt-2" style="color: #888;">{{ Math.round(loadingProgress) }}%</div>
       </div>
     </div>
 
