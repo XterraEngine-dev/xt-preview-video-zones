@@ -161,22 +161,9 @@ function getLabelInnerStyle(label) {
     display: 'inline-block' // Cambiado a inline-block para que el tamaño se ajuste al contenido
   };
 
-  // Transforms (sin translate porque las coordenadas ya están correctas)
-  const transforms = [];
-
-  if (label.scale !== undefined && label.scale !== 1) {
-    transforms.push(`scale(${label.scale})`);
-  }
-
-  if (label.rotation !== undefined && label.rotation !== 0) {
-    transforms.push(`rotate(${label.rotation}deg)`);
-  }
-
-  if (transforms.length > 0) {
-    style.transform = transforms.join(' ');
-    style.transformOrigin = 'top left'; // Importante: rotación desde top-left
-  }
-
+  // ============================================
+  // PASO 1: Aplicar estilos de TEXTO primero
+  // ============================================
 
   // Font size - aplicar factor de escala Android TV (240 DPI / 160 baseline = 1.5)
   const ANDROID_TV_SCALE = 240 / 160; // 1.5x scale factor for 240dpi
@@ -202,21 +189,6 @@ function getLabelInnerStyle(label) {
     style.fontSize = `${16 * ANDROID_TV_SCALE}px`; // 24px
   }
 
-  // Color
-  style.color = labelStyle.color || label.color || '#ffffff';
-
-  // Font Weight (bold, normal, 100-900)
-  const fontWeight = labelStyle.fontWeight || label.fontWeight;
-  if (fontWeight) {
-    style.fontWeight = fontWeight;
-  }
-
-  // Font Style (italic, normal)
-  const fontStyle = labelStyle.fontStyle || label.fontStyle;
-  if (fontStyle) {
-    style.fontStyle = fontStyle;
-  }
-
   // Font Family
   const fontFamily = labelStyle.fontFamily || label.fontFamily;
   console.log('Font Family - labelStyle.fontFamily:', labelStyle.fontFamily, 'label.fontFamily:', label.fontFamily, 'Final:', fontFamily);
@@ -239,6 +211,32 @@ function getLabelInnerStyle(label) {
     console.log('Font Family es null/undefined, usando string vacío');
   }
 
+  // Font Weight (bold, normal, 100-900)
+  const fontWeight = labelStyle.fontWeight || label.fontWeight;
+  if (fontWeight) {
+    style.fontWeight = fontWeight;
+  }
+
+  // Font Style (italic, normal)
+  const fontStyle = labelStyle.fontStyle || label.fontStyle;
+  if (fontStyle) {
+    style.fontStyle = fontStyle;
+  }
+
+  // Color
+  style.color = labelStyle.color || label.color || '#ffffff';
+
+  // Line height
+  if (labelStyle.lineHeight || label.lineHeight) {
+    style.lineHeight = labelStyle.lineHeight || label.lineHeight;
+  }
+
+  // Text shadow (solo aplicar si está definido explícitamente)
+  const textShadow = labelStyle.textShadow || label.textShadow;
+  if (textShadow !== undefined && textShadow !== null && textShadow !== '') {
+    style.textShadow = textShadow;
+  }
+
   console.log('Label style applied:', {
     text: label.text,
     fontSize: style.fontSize,
@@ -248,11 +246,9 @@ function getLabelInnerStyle(label) {
     color: style.color
   });
 
-  // Text shadow (solo aplicar si está definido explícitamente)
-  const textShadow = labelStyle.textShadow || label.textShadow;
-  if (textShadow !== undefined && textShadow !== null && textShadow !== '') {
-    style.textShadow = textShadow;
-  }
+  // ============================================
+  // PASO 2: Aplicar dimensiones DESPUÉS del texto
+  // ============================================
 
   // Width y Height - SOLO aplicar si están definidos explícitamente
   // Si no hay width, el contenedor se ajustará al contenido (sin wrap)
@@ -283,14 +279,29 @@ function getLabelInnerStyle(label) {
     }
   }
 
-  // Line height
-  if (labelStyle.lineHeight || label.lineHeight) {
-    style.lineHeight = labelStyle.lineHeight || label.lineHeight;
-  }
-
   // Opacity
   if (label.opacity !== undefined) {
     style.opacity = label.opacity;
+  }
+
+  // ============================================
+  // PASO 3: Aplicar transformaciones AL FINAL
+  // ============================================
+
+  // Transforms (sin translate porque las coordenadas ya están correctas)
+  const transforms = [];
+
+  if (label.scale !== undefined && label.scale !== 1) {
+    transforms.push(`scale(${label.scale})`);
+  }
+
+  if (label.rotation !== undefined && label.rotation !== 0) {
+    transforms.push(`rotate(${label.rotation}deg)`);
+  }
+
+  if (transforms.length > 0) {
+    style.transform = transforms.join(' ');
+    style.transformOrigin = 'top left'; // Importante: rotación desde top-left
   }
 
   return style;
