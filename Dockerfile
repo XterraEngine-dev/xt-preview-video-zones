@@ -31,5 +31,5 @@ COPY --from=builder /app/dist /app/dist
 # Expose port
 EXPOSE 5225
 
-# Serve the application
+# Serve the application (serve automatically sets correct Content-Type headers)
 CMD ["serve", "-s", "dist", "-l", "5225"]
